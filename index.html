@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Love Heart</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#000;
+    overflow:hidden;
+    width:100vw;
+    height:100vh;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+canvas{
+    display:block;
+}
+
+#centerText{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    color:white;
+    font-size:55px;
+    font-weight:bold;
+    text-shadow:
+        0 0 10px #ff3366,
+        0 0 20px #ff3366,
+        0 0 40px #ff3366;
+    pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="centerText">Love you.</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener("resize",()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+const particles = [];
+
+function heart(t){
+
+    return {
+        x:16*Math.pow(Math.sin(t),3),
+        y:13*Math.cos(t)
+         -5*Math.cos(2*t)
+         -2*Math.cos(3*t)
+         -Math.cos(4*t)
+    };
+}
+
+for(let i=0;i<900;i++){
+
+    const t = Math.random()*Math.PI*2;
+    const p = heart(t);
+
+    particles.push({
+        x:p.x*18,
+        y:-p.y*18,
+        z:(Math.random()-0.5)*140
+    });
+
+}
+
+let angle = 0;
+
+function rotateY(x,z,a){
+    return {
+        x:x*Math.cos(a)-z*Math.sin(a),
+        z:x*Math.sin(a)+z*Math.cos(a)
+    };
+}
+
+function rotateX(y,z,a){
+    return {
+        y:y*Math.cos(a)-z*Math.sin(a),
+        z:y*Math.sin(a)+z*Math.cos(a)
+    };
+}
+
+function animate(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    angle += 0.01;
+
+    for(let p of particles){
+
+        let ry = rotateY(p.x,p.z,angle);
+        let rx = rotateX(p.y,ry.z,0.35);
+
+        const perspective = 600;
+        const scale = perspective/(perspective-rx.z);
+
+        const sx = ry.x*scale + canvas.width/2;
+        const sy = rx.y*scale + canvas.height/2;
+
+        const alpha = Math.max(0.2,scale*0.8);
+
+        ctx.save();
+
+        ctx.globalAlpha = alpha;
+        ctx.translate(sx,sy);
+
+        ctx.font = `${10+scale*5}px Arial`;
+        ctx.textAlign = "center";
+
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#ff3366";
+
+        ctx.fillStyle = "#ff4d88";
+        ctx.fillText("I love you",0,0);
+
+        ctx.restore();
+    }
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
